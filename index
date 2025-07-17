@@ -1,107 +1,114 @@
-import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Copy, ChevronDown } from "lucide-react";
-import { motion } from "framer-motion";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧸 Dua's Menu</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #fcd5ce, #cdb4db);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+    .meal-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin: 10px;
+      padding: 15px;
+      width: 300px;
+    }
+    select {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    textarea {
+      width: 300px;
+      height: 150px;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      resize: none;
+    }
+    button {
+      background-color: #a78bfa;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #7c3aed;
+    }
+  </style>
+</head>
+<body>
 
-const meals = [
-  "9 AM",
-  "11 AM",
-  "1 PM",
-  "3 PM",
-  "5 PM",
-  "7 PM",
-];
+  <h1>🧸 Dua's Menu</h1>
 
-const foods = [
-  "Apple Smoothie",
-  "Apple & Blackberry Smoothie",
-  "Dosa/Idli",
-  "Chicken",
-  "Banana & Nuts with Milk",
-  "Ragi",
-  "Strawberries",
-  "Strawberries with Yogurt",
-  "Fish",
-  "Fish & Sweet Potato",
-  "Egg and Cheese",
-  "Orange Juice",
-  "Rice",
-];
+  <div id="meal-container"></div>
 
-export default function ChildFoodMenu() {
-  const [selections, setSelections] = useState({});
+  <h2>Summary</h2>
+  <textarea id="summary" readonly>🧸 Dua's menu</textarea><br/>
+  <button onclick="copySummary()">Copy Summary</button>
 
-  const handleSelection = (time, food) => {
-    setSelections((prev) => ({ ...prev, [time]: food }));
-  };
+  <script>
+    const meals = ["9 AM", "11 AM", "1 PM", "3 PM", "5 PM", "7 PM"];
+    const foods = [
+      "Apple Smoothie", "Apple & Blackberry Smoothie", "Dosa/Idli", "Chicken",
+      "Banana & Nuts with Milk", "Ragi", "Strawberries", "Strawberries with Yogurt",
+      "Fish", "Fish & Sweet Potato", "Egg and Cheese", "Orange Juice", "Rice"
+    ];
 
-  const generateSummary = () => {
-    let summary = "🧸 Dua's menu\n";
-    summary += meals
-      .map(
-        (time) => `${time}: ${selections[time] ? selections[time] : "Not Selected"}`
-      )
-      .join("\n");
-    return summary;
-  };
+    const selections = {};
+    const mealContainer = document.getElementById('meal-container');
+    const summaryBox = document.getElementById('summary');
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(generateSummary());
-  };
+    meals.forEach(time => {
+      const card = document.createElement('div');
+      card.className = 'meal-card';
+      card.innerHTML = `
+        <h3>${time}</h3>
+        <select onchange="handleSelection('${time}', this.value)">
+          <option value="">Select Food</option>
+          ${foods.map(food => `<option value="${food}">${food}</option>`).join('')}
+        </select>
+      `;
+      mealContainer.appendChild(card);
+    });
 
-  return (
-    <div className="flex flex-col items-center p-8 space-y-6 bg-gradient-to-br from-pink-100 to-purple-200 min-h-screen">
-      <h1 className="text-4xl font-bold mb-4">🧸 Dua's Menu</h1>
+    window.handleSelection = function(time, food) {
+      selections[time] = food;
+      updateSummary();
+    };
 
-      {meals.map((time, index) => (
-        <motion.div
-          key={time}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.1 }}
-          className="w-full max-w-md"
-        >
-          <Card className="w-full shadow-lg">
-            <CardContent className="p-4">
-              <h2 className="text-xl font-semibold mb-2">{time}</h2>
-              <div className="relative">
-                <select
-                  className="w-full p-2 rounded border appearance-none bg-white shadow-sm focus:ring-2 focus:ring-purple-300"
-                  value={selections[time] || ""}
-                  onChange={(e) => handleSelection(time, e.target.value)}
-                >
-                  <option value="">Select Food</option>
-                  {foods.map((food) => (
-                    <option key={food} value={food}>
-                      {food}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-3 text-gray-400 pointer-events-none" size={20} />
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      ))}
+    function updateSummary() {
+      let summary = "🧸 Dua's menu\n";
+      meals.forEach(time => {
+        summary += `${time}: ${selections[time] || 'Not Selected'}\n`;
+      });
+      summaryBox.value = summary.trim();
+    }
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8 }}
-        className="w-full max-w-md"
-      >
-        <h2 className="text-xl font-semibold mb-2">Summary</h2>
-        <Textarea
-          className="w-full h-40 mb-2 text-gray-700 bg-white shadow-md"
-          readOnly
-          value={generateSummary()}
-        />
-        <Button onClick={handleCopy} className="w-full flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white">
-          <Copy size={16} /> Copy Summary
-        </Button>
-      </motion.div>
-    </div>
-  );
-}
+    function copySummary() {
+      summaryBox.select();
+      document.execCommand('copy');
+      alert('Summary copied to clipboard!');
+    }
+  </script>
+
+</body>
+</html>
