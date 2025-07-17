@@ -24,7 +24,7 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       width: 300px;
     }
-    select, textarea {
+    select, textarea, input {
       width: 100%;
       margin-top: 8px;
       padding: 8px;
@@ -33,7 +33,6 @@
       box-sizing: border-box;
     }
     textarea {
-      margin-top: 12px;
       resize: vertical;
     }
     #summary {
@@ -61,7 +60,6 @@
 <body>
 
   <h1>🧸 Dua's Menu</h1>
-
   <div id="mealContainer"></div>
 
   <h2>Summary</h2>
@@ -73,11 +71,13 @@
     const foods = [
       "Apple Smoothie", "Apple & Blackberry Smoothie", "Dosa/Idli", "Chicken",
       "Banana & Nuts with Milk", "Ragi", "Strawberries", "Strawberries with Yogurt",
-      "Fish", "Fish & Sweet Potato", "Egg and Cheese", "Orange Juice", "Rice"
+      "Fish", "Fish & Sweet Potato", "Egg and Cheese", "Orange Juice", "Rice",
+      "Custom Text"
     ];
 
     const selections = {};
-    const notes = {};
+    const customTexts = {};
+
     const container = document.getElementById('mealContainer');
     const summaryBox = document.getElementById('summary');
 
@@ -94,27 +94,43 @@
         foods.map(food => `<option value="${food}">${food}</option>`).join('');
       select.addEventListener('change', e => {
         selections[time] = e.target.value;
+        renderCustomInput(time, card, e.target.value);
         updateSummary();
       });
       card.appendChild(select);
 
-      const noteInput = document.createElement('textarea');
-      noteInput.placeholder = 'Add custom note or instruction...';
-      noteInput.addEventListener('input', e => {
-        notes[time] = e.target.value;
-        updateSummary();
-      });
-      card.appendChild(noteInput);
-
       container.appendChild(card);
     });
+
+    function renderCustomInput(time, card, selection) {
+      let existingInput = card.querySelector('input.custom-text');
+      if (selection === 'Custom Text') {
+        if (!existingInput) {
+          const input = document.createElement('input');
+          input.className = 'custom-text';
+          input.placeholder = 'Enter custom text...';
+          input.value = customTexts[time] || '';
+          input.addEventListener('input', e => {
+            customTexts[time] = e.target.value;
+            updateSummary();
+          });
+          card.appendChild(input);
+        }
+      } else if (existingInput) {
+        existingInput.remove();
+        customTexts[time] = '';
+      }
+    }
 
     function updateSummary() {
       let summary = "🧸 Dua's menu\n";
       meals.forEach(time => {
-        const food = selections[time] || 'Not Selected';
-        const note = notes[time] ? ` (Note: ${notes[time]})` : '';
-        summary += `${time}: ${food}${note}\n`;
+        const selected = selections[time];
+        if (selected === 'Custom Text') {
+          summary += `${time}: ${customTexts[time] || '(No custom text provided)'}\n`;
+        } else {
+          summary += `${time}: ${selected || 'Not Selected'}\n`;
+        }
       });
       summaryBox.value = summary.trim();
     }
